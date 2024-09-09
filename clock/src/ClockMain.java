@@ -19,8 +19,11 @@ public class ClockMain {
                 try {
                     long startTime = System.currentTimeMillis();
 
-                    // Perform the update
+                    // Updaterar tiden
                     tm.update();
+
+                    // Alarm check
+                    tm.checkAlarm();
 
                     long elapsedTime = System.currentTimeMillis() - startTime;
                     long sleepTime = 1000 - elapsedTime;
@@ -46,22 +49,22 @@ public class ClockMain {
     }
 
     public static class TimeMonitor {
-        //Clock Simulator
+        // Clock Simulator
         private ClockInput in;
         private ClockOutput out;
 
-        //Reala TidsAttribut
+        // Reala TidsAttribut
         private int hours;
         private int minutes;
         private int seconds;
 
-        //Alarm TidsAttribut + Alarm On/Off
+        // Alarm TidsAttribut + Alarm On/Off
         private int alarmHours;
         private int alarmMinutes;
         private int alarmSeconds;
         private boolean alarmOn;
 
-        //Semaphores
+        // Semaphores
         private Semaphore mutex;
         private Semaphore avail;
 
@@ -96,6 +99,17 @@ public class ClockMain {
             }
         }
 
+        public void checkAlarm() {
+            if (this.hours == alarmHours && this.minutes == alarmMinutes && this.seconds == alarmSeconds) {
+                out.alarm();
+                System.out.println("Alarm!");
+                alarmHours = -1;
+                alarmMinutes = -1;
+                alarmSeconds = -1;
+                alarmOn = false;
+            }
+        }
+
         public void getUserInput() {
             try {
                 avail.acquire();
@@ -110,10 +124,10 @@ public class ClockMain {
 
             switch (c) {
                 case SET_TIME:
-                    setTime(userInput); // bara skissar lite
+                    setTime(userInput);
                     break;
                 case SET_ALARM:
-                    setAlarm(userInput); 
+                    setAlarm(userInput);
                     break;
                 case TOGGLE_ALARM:
                     toggleAlarm(userInput);

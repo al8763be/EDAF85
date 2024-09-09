@@ -13,8 +13,7 @@ public class ClockMain {
         ClockOutput out = emulator.getOutput();
         TimeMonitor tm = new TimeMonitor(in, out);
 
-        // out.displayTime(15, 2, 37); // arbitrary time: just an example
-
+        //Thread för att hantera tids uppdatering, är just nu off med 1% för mycket
         Thread t1 = new Thread(() -> {
             while (true) {
                 try {
@@ -72,8 +71,6 @@ public class ClockMain {
         private Semaphore free;
         private Semaphore avail;
 
-        // Något något system.Time - 1000 ms
-
         public TimeMonitor(ClockInput in, ClockOutput out) {
             this.in = in;
             this.out = out;
@@ -89,6 +86,7 @@ public class ClockMain {
 
         }
 
+        // metod för att uppdatera tiden i TimeMonitor
         public void update(int hour, int minute, int second) throws InterruptedException {
             mutex.acquire();
             this.hours = hour;
@@ -126,6 +124,7 @@ public class ClockMain {
         }
 
         //jag fuskar lite här men det står bara att inte returnera en referens till en Attribute array
+        //returnerar en array med tids attributen
         public int[] getCurrentTime() throws InterruptedException {
             mutex.acquire();
             int[] time = new int[3];

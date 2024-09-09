@@ -15,19 +15,35 @@ public class ClockMain {
 
         // out.displayTime(15, 2, 37); // arbitrary time: just an example
 
-        while (true) {
-            UserInput userInput = tm.getUserInput();
-            Choice c = userInput.choice();
-
-            Thread t1 = new Thread(() -> {
+        Thread t1 = new Thread(() -> {
+            while (true) {
                 try {
-                    tm.update();
+                    int[] timeArray = tm.getCurrentTime();
+
+                    Thread.sleep(1000 - timeArray[2]);
+                    timeArray[2] = (timeArray[2] + 1) % 60;
+                    if (timeArray[2] == 0) {
+                        timeArray[1] = (timeArray[1] + 1) % 60;
+                        if (timeArray[1] == 0) {
+                            timeArray[0] = (timeArray[0] + 1) % 24;
+                        }
+                    }
+                    tm.update(timeArray[0], timeArray[1], timeArray[2]);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            });
+            }
+            
+        });
 
-            switch (c) {
+        t1.start();
+        while (true) {
+            //UserInput userInput = tm.getUserInput();
+           // Choice c = userInput.choice();
+        
+           
+        
+           /*  switch (c) {
                 case SET_TIME:
                     tm.setTime(); // bara skissar lite
                     break;
@@ -37,13 +53,12 @@ public class ClockMain {
                 case TOGGLE_ALARM:
                     tm.toggleAlarm();
                     break;
-            }
-
-            int h = userInput.hours();
-            int m = userInput.minutes();
-            int s = userInput.seconds();
-
-            System.out.println("choice=" + c + " h=" + h + " m=" + m + " s=" + s);
+            } */
+        
+            /* int[] time = tm.getCurrentTime();
+            for(int i = 0; i < 3; i++) {
+               System.out.print(time[i] + " ");
+            } */
         }
     }
 
@@ -66,21 +81,24 @@ public class ClockMain {
             this.hours = java.time.LocalTime.now().getHour();
             this.minutes = java.time.LocalTime.now().getMinute();
             this.seconds = java.time.LocalTime.now().getSecond();
+            out.displayTime(hours, minutes, seconds);
 
             mutex = new Semaphore(1);
             free = new Semaphore(1);
-            avail = new Semaphore(0);
+            avail = in.getSemaphore();
 
         }
 
-        public void update() {
-            // Ta nuvarnade tid 
-            
-            // 
-            throw new UnsupportedOperationException("Unimplemented method 'update'");
+        public void update(int hour, int minute, int second) throws InterruptedException {
+            mutex.acquire();
+            this.hours = hour;
+            this.minutes = minute;
+            this.seconds = second;
+            out.displayTime(hour, minute, second);
+            mutex.release();
         }
 
-        public UserInput getUserInput() {
+        private UserInput getUserInput() {
             try {
                 avail.acquire();
                 UserInput userInput = in.getUserInput();
@@ -92,7 +110,7 @@ public class ClockMain {
             }
         }
 
-        public void setUserInput() throws InterruptedException {
+        private void setUserInput() throws InterruptedException {
             UserInput userInput = getUserInput();
 
             mutex.acquire();
@@ -107,8 +125,15 @@ public class ClockMain {
 
         }
 
-        public void getTime() {
-
+        //jag fuskar lite här men det står bara att inte returnera en referens till en Attribute array
+        public int[] getCurrentTime() throws InterruptedException {
+            mutex.acquire();
+            int[] time = new int[3];
+            time[0] = hours;
+            time[1] = minutes;
+            time[2] = seconds;
+            mutex.release();
+            return time;
         }
 
     }

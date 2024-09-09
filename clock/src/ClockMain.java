@@ -17,22 +17,27 @@ public class ClockMain {
         Thread t1 = new Thread(() -> {
             while (true) {
                 try {
-                    int[] timeArray = tm.getCurrentTime();
-
-                    Thread.sleep(1000 - timeArray[2]);
-                    timeArray[2] = (timeArray[2] + 1) % 60;
-                    if (timeArray[2] == 0) {
-                        timeArray[1] = (timeArray[1] + 1) % 60;
-                        if (timeArray[1] == 0) {
-                            timeArray[0] = (timeArray[0] + 1) % 24;
-                        }
+                    long startTime = System.currentTimeMillis();
+                
+                    // Perform the update
+                    tm.update();
+                    
+                    long elapsedTime = System.currentTimeMillis() - startTime;
+                    long sleepTime = 1000 - elapsedTime;
+                    
+                    if (sleepTime > 0) {
+                        Thread.sleep(sleepTime);
                     }
-                    tm.update(timeArray[0], timeArray[1], timeArray[2]);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
             
+        });
+
+        Thread t2 = new Thread(() -> {
+            while (true) {
+            }
         });
 
         t1.start();
@@ -86,14 +91,25 @@ public class ClockMain {
 
         }
 
+        public int getSeconds() throws InterruptedException {
+            return seconds;
+        }
+
         // metod för att uppdatera tiden i TimeMonitor
-        public void update(int hour, int minute, int second) throws InterruptedException {
+        public void update() throws InterruptedException {
             mutex.acquire();
-            this.hours = hour;
-            this.minutes = minute;
-            this.seconds = second;
-            out.displayTime(hour, minute, second);
-            mutex.release();
+            try {
+                this.seconds = (this.seconds + 1) % 60;
+                if (this.seconds == 0) {
+                    this.minutes = (this.minutes + 1) % 60;
+                    if (this.minutes == 0) {
+                        this.hours = (this.hours + 1) % 24;
+                    }
+                }
+                out.displayTime(this.hours, this.minutes, this.seconds);
+            } finally {
+                mutex.release();
+            }
         }
 
         private UserInput getUserInput() {

@@ -15,21 +15,23 @@ public class ClockMain {
 
         // Thread för att hantera tids uppdatering, är just nu off med 1% för mycket
         Thread t1 = new Thread(() -> {
+            long t, diff;
+            t = System.currentTimeMillis();
+
             while (true) {
                 try {
-                    long startTime = System.currentTimeMillis();
 
                     // Updaterar tiden
                     tm.update();
 
                     // Alarm check
-                    tm.checkAlarm();
+                    tm.alarmCheck();
 
-                    long elapsedTime = System.currentTimeMillis() - startTime;
-                    long sleepTime = 1000 - elapsedTime;
+                    t += 1000;
+                    diff = t - System.currentTimeMillis();
 
-                    if (sleepTime > 0) {
-                        Thread.sleep(sleepTime);
+                    if (diff > 0) {
+                        Thread.sleep(diff);
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -58,10 +60,11 @@ public class ClockMain {
         private int minutes;
         private int seconds;
 
-        // Alarm TidsAttribut + Alarm On/Off
+        // Alarm TidsAttribut + Alarm On/Off & Alarm Counter
         private int alarmHours;
         private int alarmMinutes;
         private int alarmSeconds;
+        private int alarmCounter;
         private boolean alarmOn;
 
         // Semaphores
@@ -99,14 +102,20 @@ public class ClockMain {
             }
         }
 
-        public void checkAlarm() {
-            if (this.hours == alarmHours && this.minutes == alarmMinutes && this.seconds == alarmSeconds) {
-                out.alarm();
-                System.out.println("Alarm!");
-                alarmHours = -1;
-                alarmMinutes = -1;
-                alarmSeconds = -1;
-                alarmOn = false;
+        public void alarmCheck() throws InterruptedException {
+            mutex.acquire();
+            try {
+                if (alarmOn && hours == alarmHours && minutes == alarmMinutes
+                        && seconds == alarmSeconds) {
+                    alarmCounter = 20;
+                }
+
+                if (alarmCounter > 0) {
+                    out.alarm();
+                    alarmCounter--;
+                }
+            } finally {
+                mutex.release();
             }
         }
 

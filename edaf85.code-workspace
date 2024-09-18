@@ -20,16 +20,19 @@
 	"settings": {
 		"editor.insertSpaces": true,
 		"java.project.referencedLibraries": [
-			"../cs/labs.jar",
-			"../cs/junit/junit-platform-console-standalone-1.9.2.jar"
-                ],
+			"c:\\Users\\Berni\\EDAF85\\cs\\labs.jar",
+			"c:\\Users\\Berni\\EDAF85\\cs\\junit\\junit-platform-console-standalone-1.9.2.jar"
+		],
 		"files.exclude": {
 			"archive": true,
 			"bin": true,
 			".project": true,
 			".settings": true,
 			".classpath": true
-		}
+		},
+		"java.project.sourcePaths": [
+			"src"
+		]
 	},
 	"extensions": {
 		"recommendations": [

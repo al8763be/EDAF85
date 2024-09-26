@@ -1,24 +1,24 @@
 package lift;
 
 public class LiftThread implements Runnable {
-    private LiftMonitor m;
-    private LiftView v;
+    private LiftMonitor lift;
+    private LiftView view;
     private int currentFloor = 0;
 
-    public LiftThread(LiftMonitor m, LiftView v) {
-        this.m = m;
-        this.v = v;
+    public LiftThread(LiftMonitor lift, LiftView view) {
+        this.lift = lift;
+        this.view = view;
     }
 
     @Override
     public void run() {
 
         while (true) {      
-            int[] positions = m.liftContinue();
-            v.moveLift(currentFloor, positions[1]);
-            m.incrementFloor();
+            int[] positions = lift.moveLift();
+            view.moveLift(currentFloor, positions[1]);
+            lift.incrementFloor();
             currentFloor = positions[1];
-            m.arrived();
+            lift.arrived();
         }
     }
 

@@ -1,37 +1,33 @@
 package lift;
 
-public class PassengerThread implements Runnable {
-    private LiftMonitor m;
-    private LiftView v;
+public class PassengerThread extends Thread {
+    private LiftMonitor lift;
+    private LiftView view;
 
-    public PassengerThread(LiftMonitor m, LiftView v) {
-        this.m = m;
-        this.v = v;
+    public PassengerThread(LiftMonitor lift, LiftView view) {
+        this.view = view;
+        this.lift = lift;
     }
 
     @Override
     public void run() {
-        Passenger p = v.createPassenger();
         while (true) {
-            p.begin();
-            int startFloor = p.getStartFloor();
-            int destinationFloor = p.getDestinationFloor();
-
+            Passenger passenger = view.createPassenger();
+            passenger.begin();
             // Increase the number of passengers waiting to enter at the start floor
-            m.increaseWaitEntry(startFloor);
+            lift.increaseWaitEntry(passenger.getStartFloor());
 
             // Enter the lift
-            m.enterLift(startFloor, destinationFloor);
-            p.enterLift();
-            m.enterCompleted(); 
+            lift.enterLift(passenger);
+            passenger.enterLift();
+            lift.enterCompleted();
 
-            // Exit the lift
-            m.exitLift(destinationFloor);
-            p.exitLift();
-            m.exitCompleted();
+            // // Exit the lift
+            lift.exitLift(passenger);
+            passenger.exitLift();
+            lift.exitCompleted();
 
-            p.end();
-            run();
+            passenger.end();
         }
     }
 }
